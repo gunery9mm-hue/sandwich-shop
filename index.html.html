@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sandwich กันไหม (V3 - Mobile Admin Compacted)</title>
+<style>
+:root{--bg:#f8f9fa;--card:#fff;--text:#2d3748;--muted:#718096;--line:#e2e8f0;--accent:#1a202c;--soft:#edf2f7;--primary:#2e7d32;--primary-soft:#e8f5e9}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:Arial,"Noto Sans Thai",sans-serif;color:var(--text)}
+.container{max-width:680px;margin:auto;padding:20px 16px 40px}
+header{padding:20px 0;text-align:center}
+h1{margin:4px 0 6px;font-size:30px;color:#1a202c}h2{font-size:20px;margin:24px 0 12px;color:#1a202c}h3{font-size:16px;margin:0 0 10px}.sub{color:var(--muted);font-size:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px;margin:12px 0;box-shadow:0 4px 12px rgba(0,0,0,0.03)}
+.item-card{position:relative;border:1px solid var(--line);background:#fff;border-radius:16px;padding:20px;margin-bottom:14px;box-shadow:0 2px 8px rgba(0,0,0,0.02)}
+.item-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;border-bottom:1px solid var(--soft);padding-bottom:10px}
+.item-title{font-weight:bold;font-size:16px;color:var(--accent)}
+.remove-btn{background:none;border:0;color:#e53e3e;cursor:pointer;font-weight:bold;font-size:14px}
+select,input,textarea{width:100%;padding:12px;border:1px solid var(--line);border-radius:12px;font-size:16px;background:#fff;margin-bottom:12px;transition:0.2s}
+select:focus,input:focus,textarea:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(46,125,50,0.1)}
+select:disabled,input:disabled{background:#f2f2f2;color:#aaa}
+textarea{min-height:65px;resize:vertical;margin-bottom:0}
+label{display:block;font-size:14px;font-weight:bold;margin:10px 0 6px;color:#4a5568}
+.addons-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.addon-label{border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;gap:10px;align-items:center;font-size:15px;cursor:pointer;font-weight:normal;transition:0.2s;background:#fff}
+.addon-label:hover{border-color:var(--primary);background:#fafafa}
+.addon-label input{width:18px;height:18px;margin:0;accent-color:var(--primary)}
+.addon-label.disabled{opacity:.5;cursor:not-allowed;background:#f7fafc}
+.item-footer-price{text-align:right;font-size:16px;font-weight:bold;color:var(--primary);margin-top:14px;border-top:1px dashed var(--line);padding-top:12px}
+.item-summary-preview{font-size:14px;color:var(--primary);background:var(--primary-soft);padding:8px 12px;border-radius:10px;margin-bottom:12px;font-weight:bold}
+.total{display:flex;justify-content:space-between;font-size:20px;font-weight:bold;padding:14px 0}
+.btn{width:100%;border:0;border-radius:14px;padding:14px;font-size:16px;font-weight:bold;cursor:pointer;background:var(--accent);color:white;transition:0.2s}
+.btn:hover{opacity:0.9}
+.btn.secondary{background:var(--soft);color:var(--text);margin-top:8px}
+.btn.add-item{width:100%;border:1px dashed #a5d6a7;border-radius:14px;padding:14px;font-size:16px;font-weight:bold;cursor:pointer;background:#e8f5e9;color:var(--primary);margin-bottom:16px}
+#admin{display:none}.order{border:1px solid var(--line);border-radius:16px;padding:16px;margin:12px 0;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,0.01)}
+.order-head{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:16px}.badge{font-size:12px;background:var(--soft);padding:5px 10px;border-radius:999px;white-space:nowrap;font-weight:bold}
+.badge.paid{background:#e8f5e9;color:var(--primary)}
+.badge.pending{background:#fff3e0;color:#e65100}
+.badge.none{background:#fdecea;color:#c62828}
+.admin-item{background:var(--soft);padding:10px;border-radius:10px;margin:8px 0;font-size:14px}
+.order-meta{font-size:13px;color:#4a5568;background:#f7fafc;border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin:8px 0;line-height:1.5}
+.order-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.smallbtn{border:0;border-radius:10px;padding:9px 12px;cursor:pointer;background:var(--soft);font-weight:bold;font-size:13px}
+.smallbtn.dark{background:#111;color:#fff}
+.smallbtn.green{background:var(--primary);color:#fff}
+.empty{text-align:center;color:var(--muted);padding:30px}
+.qr-container{text-align:center;padding:15px;background:#f7fafc;border-radius:12px;border:1px dashed #cbd5e0;margin-bottom:15px}
+.qr-container img{margin-top:10px;max-width:180px;border:4px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,0.05)}
+.tabbar{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.tabbtn{flex:1;min-width:110px;border:1px solid var(--line);background:#fff;border-radius:12px;padding:10px;font-weight:bold;cursor:pointer;font-size:13px}
+.tabbtn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.tabpane{display:none}.tabpane.active{display:block}
+.menu-row{display:flex;gap:8px;align-items:center;background:var(--soft);border-radius:10px;padding:8px;margin-bottom:8px}
+.menu-row input{margin:0;padding:9px;font-size:14px}
+.menu-row .name-input{flex:2}.menu-row .price-input{flex:1;max-width:80px}
+.menu-row.disabled{opacity:.55}
+.add-menu-row{display:flex;gap:8px;margin-top:6px}
+.slip-thumb{max-width:140px;border-radius:10px;border:1px solid var(--line);display:block;margin-top:6px;cursor:pointer}
+.pay-info{font-size:14px;line-height:1.6;background:#f7fafc;border:1px dashed #cbd5e0;border-radius:10px;padding:10px;margin-bottom:12px}
+.sticky-bar{position:fixed;left:0;right:0;bottom:0;max-width:680px;margin:0 auto;background:#fff;border-top:1px solid var(--line);box-shadow:0 -6px 18px rgba(0,0,0,.05);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;z-index:50;border-radius:18px 18px 0 0}
+.sticky-bar .sticky-amt{font-size:15px}
+.sticky-bar .sticky-amt b{font-size:19px;display:block;color:var(--primary)}
+.sticky-bar button{white-space:nowrap;border:0;border-radius:13px;padding:12px 20px;font-weight:bold;background:var(--accent);color:#fff;cursor:pointer;font-size:15px}
+#customer{padding-bottom:78px}
+
+/*โซนภาพประกอบแอนิเมชันจิบิขยับตามที่เลือก*/
+.chibi-preview-box {
+  background: #fffdf6;
+  border: 2px dashed #ffeb3b;
+  border-radius: 12px;
+  padding: 15px;
+  text-align: center;
+  margin-bottom: 12px;
+  position: relative;
+  overflow: hidden;
+}
+.chibi-title {
+  font-size: 12px;
+  color: #e65100;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+.visual-sandwich {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 80px;
+  gap: 2px;
+}
+.visual-layer {
+  font-size: 26px;
+  line-height: 1;
+  animation: chibiBounce 0.4s ease-out forwards;
+}
+@keyframes chibiBounce {
+  0% { transform: scale(0.3) translateY(-30px); opacity: 0; }
+  70% { transform: scale(1.1) translateY(5px); opacity: 1; }
+  100% { transform: scale(1) translateY(0); }
+}
+
+@media(max-width:480px){
+  .addons-grid{grid-template-columns:1fr}
+  .tabbar { gap: 4px; margin-bottom: 10px; }
+  .tabbtn { min-width: 80px; padding: 8px; font-size: 12px; border-radius: 8px; }
+  .order { padding: 12px; margin: 8px 0; border-radius: 12px; }
+  .order-head { flex-direction: column; align-items: flex-start; gap: 4px; font-size: 14px; }
+  .order-head .badge { align-self: flex-start; font-size: 11px; padding: 3px 8px; }
+  .order-meta { font-size: 12px; padding: 6px 10px; margin: 6px 0; border-radius: 8px; }
+  .admin-item { padding: 8px; margin: 5px 0; font-size: 13px; border-radius: 8px; }
+  .order .total { font-size: 15px; padding: 8px 0; margin-top: 6px; }
+  .slip-thumb { max-width: 100px; border-radius: 8px; }
+  .order-actions { gap: 6px; margin-top: 10px; }
+  .order-actions .smallbtn { flex: 1 1 calc(50% - 3px); padding: 10px 6px; font-size: 12px; text-align: center; border-radius: 8px;}
+  .order-actions .smallbtn:last-child { flex: 1 1 100%; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+<header>
+<h1>🥪 Sandwich กันไหม</h1>
+<div class="sub">เลือกมิกซ์ไส้แซนด์วิชในสไตล์คุณได้อย่างอิสระ</div>
+</header>
+
+<!-- หน้าสำหรับลูกค้า -->
+<section id="customer">
+<div class="card">
+<label for="cust-name">👤 ชื่อผู้สั่งซื้อ *</label>
+<input id="cust-name" placeholder="ระบุชื่อของคุณ">
+<label for="cust-phone">📞 เบอร์โทรศัพท์ *</label>
+<input id="cust-phone" type="tel" placeholder="ระบุเบอร์โทรศัพท์ที่ติดต่อได้">
+</div>
+
+<div class="card">
+<label for="pickup-location">📍 จุดรับสินค้า *</label>
+<select id="pickup-location" onchange="togglePickupCustom(this.value)">
+<option value="ร้าน Inch&amp;Ounce สาขา รพ.ศรี">ร้าน Inch&amp;Ounce สาขา รพ.ศรี</option>
+<option value="__custom__">ระบุสถานที่รับอื่น ๆ</option>
+</select>
+<input id="pickup-location-custom" placeholder="กรุณาระบุสถานที่ที่ต้องการให้จัดส่ง/รับ" style="display:none">
+</div>
+
+<div style="display:flex;justify-content:space-between;align-items:center;">
+<h2>รายการแซนด์วิชที่ออกแบบ</h2>
+</div>
+
+<div id="sandwich-items-container"></div>
+
+<button class="btn add-item" onclick="addSandwichItem()">➕ เพิ่มแซนด์วิชอีกชิ้น</button>
+
+<div class="card" id="payment-card">
+<div class="total"><span>ยอดรวมทั้งหมด</span><span id="grand-total">0 บาท</span></div>
+<div id="payment-info"></div>
+<label for="slip-upload">🧾 แนบหลักฐานการโอนเงิน (ถ้ามี)</label>
+<input id="slip-upload" type="file" accept="image/*" onchange="handleSlipUpload(this)">
+<img id="slip-preview" class="slip-thumb" style="display:none">
+<button class="btn" style="background:var(--primary)" onclick="submitOrder()">ยืนยันการส่งออเดอร์ 🛒</button>
+</div>
+
+<div style="text-align:center;margin-top:18px">
+<span onclick="tryOpenAdmin()" style="font-size:11px;color:#cbd5e0;cursor:pointer;user-select:none">ระบบหลังบ้านร้านค้า</span>
+</div>
+
+<div class="sticky-bar" id="sticky-bar">
+<div class="sticky-amt"><span id="sticky-count">1 ชิ้น</span><b id="sticky-amt">0 บาท</b></div>
+<button onclick="submitOrder()">🛒 ส่งออเดอร์</button>
+</div>
+</section>
+
+<!-- หน้าหลังบ้านสำหรับร้านค้า -->
+<section id="admin">
+<header><h1>📋 ระบบจัดการหลังบ้าน</h1><div class="sub">ตรวจสอบสถานะคิว เมนูวัตถุดิบ และการตั้งค่า</div></header>
+<button class="btn secondary" onclick="showCustomer()">← กลับหน้าสั่งซื้อ</button>
+
+<div class="tabbar">
+<button class="tabbtn active" data-tab="tab-orders" onclick="switchTab('tab-orders')">🧾 ออเดอร์ลูกค้า</button>
+<button class="tabbtn" data-tab="tab-menu" onclick="switchTab('tab-menu')">🍽️ จัดการรายการไส้</button>
+<button class="tabbtn" data-tab="tab-settings" onclick="switchTab('tab-settings')">⚙️ ตั้งค่าระบบร้าน</button>
+</div>
+
+<div id="tab-orders" class="tabpane active">
+<div class="card">
+<h3>📱 ลิงก์ช่องทางสั่งซื้อประจำร้าน</h3>
+<div class="qr-container">
+<div id="qr-url-text" style="font-size:13px; color:var(--muted); margin-bottom:5px; word-break:break-all;">กำลังเรียกดูข้อมูล...</div>
+<img id="shop-qrcode" src="" alt="QR Code">
+</div>
+</div>
+<div id="orders"></div>
+</div>
+
+<div id="tab-menu" class="tabpane">
+<div class="card">
+<h3>🥪 รายการไส้แซนด์วิชทั้งหมด</h3>
+<div class="sub" style="margin-bottom:12px">กำหนดวัตถุดิบที่ต้องการให้ลูกค้าเลือกสั่ง (ราคาเริ่มต้นตัวแซนด์วิชเปล่า 20 บาท)</div>
+<div id="filling-menu-list"></div>
+<div class="add-menu-row">
+<input id="new-filling-name" placeholder="ชื่อไส้ใหม่ (เช่น ปูอัด)" class="name-input">
+<input id="new-filling-price" type="number" placeholder="ราคาเพิ่ม" class="price-input">
+<button class="smallbtn dark" onclick="addNewFilling()">➕ เพิ่มรายการ</button>
+</div>
+<div class="sub" style="margin-top:12px">สามารถกด "ปิดขาย" ชั่วคราวเมื่อของหมด เพื่อไม่ให้ลูกค้าเลือกสั่งวัตถุดิบนั้น ๆ</div>
+</div>
+</div>
+
+<div id="tab-settings" class="tabpane">
+<div class="card">
+<h3>💳 บัญชีธนาคารรับเงิน</h3>
+<label for="set-promptpay">PromptPay ID (เบอร์โทร หรือเลขบัตร ปชช.)</label>
+<input id="set-promptpay" placeholder="เช่น 0812345678">
+<label for="set-bankname">ชื่อธนาคาร</label>
+<input id="set-bankname" placeholder="เช่น ธนาคารกสิกรไทย">
+<label for="set-bankaccno">เลขที่บัญชี</label>
+<input id="set-bankaccno" placeholder="เช่น 123-4-56789-0">
+<label for="set-bankaccname">ชื่อบัญชีผู้รับเงิน</label>
+<input id="set-bankaccname" placeholder="เช่น นายใจดี มีสุข">
+<button class="btn" onclick="saveShopSettings()">💾 บันทึกข้อมูลบัญชี</button>
+</div>
+<div class="card">
+<h3>🔒 ความปลอดภัยหลังบ้าน</h3>
+<label for="set-admin-pass-current">รหัสผ่านปัจจุบัน</label>
+<input id="set-admin-pass-current" type="password" placeholder="กรอกรหัสผ่านปัจจุบันเพื่อตรวจสอบ">
+<label for="set-admin-pass-new">รหัสผ่านใหม่</label>
+<input id="set-admin-pass-new" type="password" placeholder="กรอกรหัสผ่านใหม่">
+<button class="btn secondary" onclick="changeAdminPassword()">🔑 เปลี่ยนรหัสผ่าน</button>
+</div>
+</div>
+</section>
+</div>
+
+<script>
+const BASE_PRICE = 20;
+
+// แฟ้ม Mapping ไอคอนอนิเมะ/จิบิ สำหรับประมวลผลกราฟิก
+const emojiVisualMap = {
+  'ไข่': '🍳',
+  'ไส้กรอก': '🌭',
+  'แฮม': '🥓',
+  'หมูหยอง': '🥮'
+};
+
+function getMenuData() {
+  let data = JSON.parse(localStorage.getItem('menu_data_v3') || 'null');
+  if (!data) {
+    data = {
+      fillings: [
+        { id: 'f1', name: 'ไข่', price: 10, disabled: false },
+        { id: 'f2', name: 'ไส้กรอก', price: 10, disabled: false },
+        { id: 'f3', name: 'แฮม', price: 10, disabled: false },
+        { id: 'f4', name: 'หมูหยอง', price: 10, disabled: false }
+      ]
+    };
+    localStorage.setItem('menu_data_v3', JSON.stringify(data));
+  }
+  return data;
+}
+function saveMenuData() { localStorage.setItem('menu_data_v3', JSON.stringify(menuData)); }
+
+function getShopSettings() {
+  return JSON.parse(localStorage.getItem('shop_settings_v3') || 'null') || { promptpayId: '', bankName: '', bankAccNo: '', bankAccName: '' };
+}
+function saveShopSettingsToStorage(s) { localStorage.setItem('shop_settings_v3', JSON.stringify(s)); }
+
+function getAdminPassword() { return localStorage.getItem('admin_password_v3') || '1234'; }
+function tryOpenAdmin() {
+  if (sessionStorage.getItem('admin_auth_v3') === 'true') { showAdmin(); return; }
+  const input = prompt('กรอกรหัสผ่านหลังบ้าน:');
+  if (input === null) return;
+  if (input === getAdminPassword()) {
+    sessionStorage.setItem('admin_auth_v3', 'true');
+    showAdmin();
+  } else {
+    alert('รหัสผ่านไม่ถูกต้อง');
+  }
+}
+function changeAdminPassword() {
+  const current = document.getElementById('set-admin-pass-current').value;
+  const next = document.getElementById('set-admin-pass-new').value;
+  if (current !== getAdminPassword()) { alert('รหัสผ่านปัจจุบันไม่ถูกต้อง'); return; }
+  if (!next || next.length < 4) { alert('กรุณาตั้งรหัสผ่านใหม่อย่างน้อย 4 ตัวอักษร'); return; }
+  localStorage.setItem('admin_password_v3', next);
+  document.getElementById('set-admin-pass-current').value = '';
+  document.getElementById('set-admin-pass-new').value = '';
+  alert('เปลี่ยนรหัสผ่านเรียบร้อยครับ');
+}
+
+let menuData = getMenuData();
+let shopSettings = getShopSettings();
+let sandwichCart = [];
+let currentSlipData = null; 
+
+function genId() { return Date.now().toString(36) + Math.random().toString(36).substr(2, 5); }
+
+/* ---------- ตะกร้าสินค้า (ฝั่งลูกค้า) ---------- */
+function addSandwichItem() {
+  sandwichCart.push({ id: genId(), fillingIds: [], note: '' });
+  renderCartItems();
+  calcTotal();
+}
+
+function removeSandwichItem(id) {
+  if (sandwichCart.length <= 1) {
+    alert('ต้องมีแซนวิชอย่างน้อย 1 ชิ้นในออเดอร์ครับ');
+    return;
+  }
+  sandwichCart = sandwichCart.filter(item => item.id !== id);
+  renderCartItems();
+  calcTotal();
+}
+
+function updateFillings(id, fillingId, checked) {
+  const idx = sandwichCart.findIndex(x => x.id === id);
+  if (idx > -1) {
+    if (checked) {
+      if (!sandwichCart[idx].fillingIds.includes(fillingId)) sandwichCart[idx].fillingIds.push(fillingId);
+    } else {
+      sandwichCart[idx].fillingIds = sandwichCart[idx].fillingIds.filter(x => x !== fillingId);
+    }
+    
+    const summaryEl = document.getElementById('summary-' + id);
+    if(summaryEl) summaryEl.textContent = generateItemSummaryName(sandwichCart[idx].fillingIds);
+    
+    // อัปเดตการแสดงผลชั้นแซนด์วิชจำลองทันทีเมื่อติ๊กเลือก
+    renderChibiVisual(id, sandwichCart[idx].fillingIds);
+  }
+  calcTotal();
+}
+
+function renderChibiVisual(itemId, fillingIds) {
+  const visualEl = document.getElementById('visual-' + itemId);
+  if (!visualEl) return;
+  
+  if (fillingIds.length === 0) {
+    visualEl.innerHTML = '<div style="color:#aaa; font-size:13px; margin-top:20px;">คอยคุณหนูมาเลือกไส้อยู่นะ... 🥪✨</div>';
+    return;
+  }
+  
+  // ประกอบแซนด์วิชจำลองขยับได้: ขนมปังบน -> ไส้ต่างๆ -> ขนมปังล่าง
+  let html = '<div class="visual-layer">🍞</div>';
+  fillingIds.forEach(fid => {
+    const f = findFilling(fid);
+    if (f) {
+      const icon = emojiVisualMap[f.name] || '✨';
+      html += `<div class="visual-layer">${icon}</div>`;
+    }
+  });
+  html += '<div class="visual-layer">🍞</div>';
+  visualEl.innerHTML = html;
+}
+
+function updateNote(id, val) {
+  const idx = sandwichCart.findIndex(x => x.id === id);
+  if (idx > -1) sandwichCart[idx].note = val;
+}
+
+function findFilling(id) { return menuData.fillings.find(f => f.id === id); }
+
+function generateItemSummaryName(fillingIds) {
+  if (!fillingIds || fillingIds.length === 0) return '🥪 (ยังไม่ได้เลือกไส้ด้านใน)';
+  const names = fillingIds.map(fid => {
+    const f = findFilling(fid);
+    return f ? f.name : '';
+  }).filter(Boolean);
+  return '🥪 ไส้: ' + names.join(' + ');
+}
+
+function getItemPrice(item) {
+  let price = BASE_PRICE;
+  item.fillingIds.forEach(fid => {
+    const f = findFilling(fid);
+    if (f) price += f.price;
+  });
+  return price;
+}
+
+function renderCartItems() {
+  const container = document.getElementById('sandwich-items-container');
+  container.innerHTML = sandwichCart.map((item, index) => {
+    
+    const fillingBoxes = menuData.fillings.map(f => {
+      const isChecked = item.fillingIds.includes(f.id) ? 'checked' : '';
+      const isDisabled = f.disabled && !item.fillingIds.includes(f.id);
+      return `
+        <label class="addon-label ${isDisabled ? 'disabled' : ''}">
+          <input type="checkbox" value="${f.id}" ${isChecked} ${isDisabled ? 'disabled' : ''}
+          onchange="updateFillings('${item.id}', '${f.id}', this.checked)"> 
+          <span>${f.name} (+${f.price}.-) ${f.disabled ? '🚫' : ''}</span>
+        </label>`;
+    }).join('');
+
+    const currentPrice = getItemPrice(item);
+    const summaryName = generateItemSummaryName(item.fillingIds);
+
+    return `
+      <div class="item-card" data-id="${item.id}">
+        <div class="item-header">
+          <span class="item-title">✨ แซนด์วิชชิ้นที่ ${index + 1}</span>
+          <button class="remove-btn" onclick="removeSandwichItem('${item.id}')">❌ ลบชิ้นนี้</button>
+        </div>
+        
+        <div class="item-summary-preview" id="summary-${item.id}">${summaryName}</div>
+        
+        <!-- ส่วนหน้าต่างแสดงรูปภาพจำลองจิบิขยับตามการเลือกสั่ง -->
+        <div class="chibi-preview-box">
+          <div class="chibi-title">🧸 เมนูลองมิกซ์สดใหม่ของหนู:</div>
+          <div class="visual-sandwich" id="visual-${item.id}">
+            <div style="color:#aaa; font-size:13px; margin-top:20px;">คอยคุณหนูมาเลือกไส้อยู่นะ... 🥪✨</div>
+          </div>
+        </div>
+
+        <label>เลือกสรรความอร่อย (ราคาเริ่มต้น ${BASE_PRICE} บาท)</label>
+        <div class="addons-grid">${fillingBoxes}</div>
+        
+        <!-- ปรับเปลี่ยนคำอธิบายตามที่แจ้งตัดคำว่าอบเกรียมและเปลี่ยนตัวอย่างข้อความ -->
+        <label>📝 หมายเหตุเพิ่มเติม เช่น ไม่เอาซอสมะเขือเทศ ไม่เอาผัก</label>
+        <textarea placeholder="ระบุความต้องการเพิ่มเติมของคุณที่นี่..." onchange="updateNote('${item.id}', this.value)">${item.note}</textarea>
+        
+        <div class="item-footer-price" id="price-${item.id}">ราคาชิ้นนี้ ${currentPrice} บาท</div>
+      </div>`;
+  }).join('');
+  
+  // เรนเดอร์รูปภาพจิบิเริ่มต้นให้กับทุกการ์ด
+  sandwichCart.forEach(item => renderChibiVisual(item.id, item.fillingIds));
+}
+
+function calcTotal() {
+  let grandTotal = 0;
+  sandwichCart.forEach(item => {
+    const p = getItemPrice(item);
+    grandTotal += p;
+    const priceEl = document.getElementById('price-' + item.id);
+    if(priceEl) priceEl.textContent = `ราคาชิ้นนี้ ${p} บาท`;
+  });
+
+  document.getElementById('grand-total').textContent = grandTotal + ' บาท';
+  const stickyAmt = document.getElementById('sticky-amt');
+  if (stickyAmt) stickyAmt.textContent = grandTotal + ' บาท';
+  const stickyCount = document.getElementById('sticky-count');
+  if (stickyCount) stickyCount.textContent = sandwichCart.length + ' ชิ้น';
+  
+  renderPaymentInfo(grandTotal);
+  return grandTotal;
+}
+
+function renderPaymentInfo(amount) {
+  const el = document.getElementById('payment-info');
+  shopSettings = getShopSettings();
+  let html = '';
+  if (shopSettings.promptpayId) {
+    const qrUrl = 'https://promptpay.io/' + encodeURIComponent(shopSettings.promptpayId) + '/' + amount + '.png';
+    html += `<div class="qr-container"><div class="sub" style="font-weight:bold;margin-bottom:8px;color:var(--accent)">สแกน QR จ่ายเงินสุทธิ ${amount} บาท</div><img src="${qrUrl}" alt="PromptPay"></div>`;
+  }
+  if (shopSettings.bankName || shopSettings.bankAccNo) {
+    html += `<div class="pay-info">
+      ${shopSettings.bankName ? `🏦 ธนาคาร: <b>${shopSettings.bankName}</b><br>` : ''}
+      ${shopSettings.bankAccNo ? `🔢 เลขบัญชี: <b>${shopSettings.bankAccNo}</b><br>` : ''}
+      ${shopSettings.bankAccName ? `👤 ชื่อบัญชี: <b>${shopSettings.bankAccName}</b>` : ''}
+    </div>`;
+  }
+  el.innerHTML = html;
+}
+
+function handleSlipUpload(input) {
+  const file = input.files[0];
+  if (!file) { currentSlipData = null; return; }
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    currentSlipData = e.target.result;
+    const preview = document.getElementById('slip-preview');
+    preview.src = currentSlipData;
+    preview.style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+}
+
+function togglePickupCustom(val) {
+  const customInput = document.getElementById('pickup-location-custom');
+  customInput.style.display = (val === '__custom__') ? 'block' : 'none';
+}
+
+function getPickupLocationValue() {
+  const select = document.getElementById('pickup-location');
+  return select.value === '__custom__' ? document.getElementById('pickup-location-custom').value.trim() : select.value;
+}
+
+function submitOrder() {
+  const custName = document.getElementById('cust-name').value.trim();
+  const custPhone = document.getElementById('cust-phone').value.trim();
+  const pickupLocation = getPickupLocationValue();
+
+  if (!custName) { alert('กรุณากรอกชื่อลูกค้า'); return; }
+  if (!custPhone) { alert('กรุณากรอกเบอร์โทรลูกค้า'); return; }
+  if (!pickupLocation) { alert('กรุณาระบุสถานที่รับสินค้า'); return; }
+  
+  for (let i = 0; i < sandwichCart.length; i++) {
+    if (sandwichCart[i].fillingIds.length === 0) {
+      alert(`ชิ้นที่ ${i + 1}: กรุณาเลือกไส้อย่างน้อย 1 อย่างครับ`);
+      return;
+    }
+  }
+
+  const itemDetails = sandwichCart.map(item => {
+    return {
+      summaryName: generateItemSummaryName(item.fillingIds),
+      price: getItemPrice(item),
+      note: item.note
+    };
+  });
+
+  const order = {
+    id: Date.now(),
+    customerName: custName,
+    customerPhone: custPhone,
+    pickupLocation: pickupLocation,
+    items: itemDetails,
+    totalPrice: calcTotal(),
+    status: 'รอทำ',
+    slipImage: currentSlipData,
+    paymentConfirmed: false,
+    time: new Date().toLocaleString('th-TH')
+  };
+
+  const orders = JSON.parse(localStorage.getItem('orders_v3') || '[]');
+  orders.unshift(order);
+  localStorage.setItem('orders_v3', JSON.stringify(orders));
+
+  alert('ส่งคำสั่งซื้อไปยังระบบของทางร้านเรียบร้อยแล้ว ขอบคุณครับ!');
+  
+  document.getElementById('cust-name').value = '';
+  document.getElementById('cust-phone').value = '';
+  document.getElementById('pickup-location').value = 'ร้าน Inch&Ounce สาขา รพ.ศรี';
+  document.getElementById('pickup-location-custom').value = '';
+  document.getElementById('pickup-location-custom').style.display = 'none';
+  document.getElementById('slip-upload').value = '';
+  document.getElementById('slip-preview').style.display = 'none';
+  currentSlipData = null;
+  initCart();
+}
+
+function initCart() {
+  sandwichCart = [];
+  addSandwichItem();
+}
+
+/* ---------- ระบบหน้าต่าง ---------- */
+function showAdmin() {
+  document.getElementById('customer').style.display = 'none';
+  document.getElementById('admin').style.display = 'block';
+  renderOrdersAdmin();
+  renderMenuAdmin();
+  loadSettingsForm();
+  generateShopQR();
+}
+
+function showCustomer() {
+  document.getElementById('admin').style.display = 'none';
+  document.getElementById('customer').style.display = 'block';
+  renderCartItems();
+  calcTotal();
+}
+
+function switchTab(tabId) {
+  document.querySelectorAll('.tabpane').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tabbtn').forEach(el => el.classList.remove('active'));
+  document.getElementById(tabId).classList.add('active');
+  document.querySelector('.tabbtn[data-tab="' + tabId + '"]').classList.add('active');
+}
+
+function loadSettingsForm() {
+  shopSettings = getShopSettings();
+  document.getElementById('set-promptpay').value = shopSettings.promptpayId || '';
+  document.getElementById('set-bankname').value = shopSettings.bankName || '';
+  document.getElementById('set-bankaccno').value = shopSettings.bankAccNo || '';
+  document.getElementById('set-bankaccname').value = shopSettings.bankAccName || '';
+}
+
+function saveShopSettings() {
+  shopSettings = {
+    promptpayId: document.getElementById('set-promptpay').value.trim(),
+    bankName: document.getElementById('set-bankname').value.trim(),
+    bankAccNo: document.getElementById('set-bankaccno').value.trim(),
+    bankAccName: document.getElementById('set-bankaccname').value.trim()
+  };
+  saveShopSettingsToStorage(shopSettings);
+  alert('บันทึกการตั้งค่าเรียบร้อยครับ');
+}
+
+/* ---------- จัดการไส้ (หลังบ้าน) ---------- */
+function renderMenuAdmin() {
+  const listEl = document.getElementById('filling-menu-list');
+  listEl.innerHTML = menuData.fillings.map(f => `
+    <div class="menu-row ${f.disabled ? 'disabled' : ''}">
+      <input class="name-input" value="${f.name}" onchange="updateFillingName('${f.id}', this.value)">
+      <input class="price-input" type="number" value="${f.price}" onchange="updateFillingPrice('${f.id}', this.value)">
+      <button class="smallbtn" onclick="toggleFillingDisabled('${f.id}')">${f.disabled ? '✅ เปิดขาย' : '🚫 ปิดขาย'}</button>
+      <button class="smallbtn" onclick="removeFilling('${f.id}')">🗑️</button>
+    </div>
+  `).join('') || '<div class="sub">ยังไม่มีข้อมูลรายการวัตถุดิบ</div>';
+}
+
+function updateFillingName(id, val) { const f = findFilling(id); if (f) { f.name = val; saveMenuData(); } }
+function updateFillingPrice(id, val) { const f = findFilling(id); if (f) { f.price = parseFloat(val) || 0; saveMenuData(); } }
+function toggleFillingDisabled(id) { const f = findFilling(id); if (f) { f.disabled = !f.disabled; saveMenuData(); renderMenuAdmin(); } }
+function removeFilling(id) {
+  if (!confirm('ยืนยันที่จะลบส่วนผสมนี้ออกจากเมนูร้านค้า?')) return;
+  menuData.fillings = menuData.fillings.filter(f => f.id !== id);
+  saveMenuData(); renderMenuAdmin();
+}
+function addNewFilling() {
+  const name = document.getElementById('new-filling-name').value.trim();
+  const price = parseFloat(document.getElementById('new-filling-price').value) || 0;
+  if (!name) { alert('กรุณากรอกชื่อไส้'); return; }
+  menuData.fillings.push({ id: genId(), name, price, disabled: false });
+  saveMenuData();
+  document.getElementById('new-filling-name').value = '';
+  document.getElementById('new-filling-price').value = '';
+  renderMenuAdmin();
+}
+
+function generateShopQR() {
+  const currentUrl = window.location.href;
+  const qrImg = document.getElementById('shop-qrcode');
+  const qrText = document.getElementById('qr-url-text');
+
+  if (currentUrl.startsWith('file://')) {
+    qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://tiiny.host`;
+    qrText.innerHTML = `⚠️ <strong>โหมดเปิดไฟล์ในเครื่อง:</strong> เมื่ออัปโหลดขึ้นลิงก์จริงระบบจะเจน QR Code ร้านค้าให้อัตโนมัติ`;
+  } else {
+    qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(currentUrl)}`;
+    qrText.innerHTML = `🔗 ลิงก์ร้านค้าของคุณ: <a href="${currentUrl}" target="_blank">${currentUrl}</a>`;
+  }
+}
+
+/* ---------- จัดการออเดอร์ (หลังบ้าน) ---------- */
+function renderOrdersAdmin() {
+  const el = document.getElementById('orders');
+  const orders = JSON.parse(localStorage.getItem('orders_v3') || '[]');
+
+  if (!orders.length) {
+    el.innerHTML = '<div class="empty">ยังไม่มีรายการสั่งซื้อในระบบขณะนี้</div>';
+    return;
+  }
+
+  el.innerHTML = orders.map((o, index) => {
+    const itemsHtml = o.items.map((item, i) => `
+      <div class="admin-item">
+        <strong>ชิ้นที่ ${i + 1}:</strong> <span style="color:var(--primary); font-weight:bold">${item.summaryName}</span> (${item.price}.-)
+        ${item.note ? `<br><span style="color:#d32f2f">└ 📝 คำขอพิเศษ: ${item.note}</span>` : ''}
+      </div>
+    `).join('');
+
+    let badgeClass = 'none', badgeText = '❌ ยังไม่แนบสลิป';
+    if (o.paymentConfirmed) { badgeClass = 'paid'; badgeText = '✅ ยืนยันยอดสำเร็จ'; }
+    else if (o.slipImage) { badgeClass = 'pending'; badgeText = '🕓 รอตรวจสลิป'; }
+
+    return `
+      <div class="order">
+        <div class="order-head">
+          <strong>#${String(orders.length - index).padStart(3, '0')} · คุณ ${o.customerName}</strong>
+          <span class="badge ${badgeClass}">${badgeText}</span>
+        </div>
+
+        <div class="order-meta">
+          🕒 เวลาสั่ง: ${o.time}<br>
+          📞 เบอร์ติดต่อ: ${o.customerPhone || '-'}<br>
+          📍 จุดรับสินค้า: ${o.pickupLocation || '-'}
+        </div>
+
+        <div>${itemsHtml}</div>
+
+        <div class="total" style="font-size:16px; border-top:1px dashed #ccc; margin-top:10px">
+          <span>ราคารวม (${o.items.length} ชิ้น)</span>
+          <span>${o.totalPrice} บาท</span>
+        </div>
+
+        ${o.slipImage ? `<div style="margin-top:6px;"><img class="slip-thumb" src="${o.slipImage}" onclick="window.open('${o.slipImage}', '_blank')"></div>` : ''}
+
+        <div class="order-actions">
+          <button class="smallbtn dark" onclick="printStickers(${o.id})">🖨️ ป้ายแปะห่อ</button>
+          ${!o.paymentConfirmed ? `<button class="smallbtn green" onclick="confirmPayment(${o.id})">✅ รับเงินแล้ว</button>` : ''}
+          <button class="smallbtn" onclick="doneOrder(${o.id})">✅ ทำเสร็จแล้ว (ลบคิว)</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function confirmPayment(id) {
+  let orders = JSON.parse(localStorage.getItem('orders_v3') || '[]');
+  const o = orders.find(x => x.id === id);
+  if (o) o.paymentConfirmed = true;
+  localStorage.setItem('orders_v3', JSON.stringify(orders));
+  renderOrdersAdmin();
+}
+
+function doneOrder(id) {
+  let orders = JSON.parse(localStorage.getItem('orders_v3') || '[]');
+  orders = orders.filter(x => x.id !== id);
+  localStorage.setItem('orders_v3', JSON.stringify(orders));
+  renderOrdersAdmin();
+}
+
+/* ---------- พิมพ์สติกเกอร์ ---------- */
+function printStickers(id) {
+  const orders = JSON.parse(localStorage.getItem('orders_v3') || '[]');
+  const o = orders.find(x => x.id === id);
+  if (!o) return;
+
+  const w = window.open('', '_blank', 'width=600,height=500');
+
+  let htmlContent = `
+    <html>
+    <head>
+      <title>Stickers - ${o.customerName}</title>
+      <style>
+        @page { size: 57mm 30mm; margin: 0; }
+        body { margin: 0; font-family: Arial, "Noto Sans Thai", sans-serif; background: #fff; }
+        .sticker-page {
+          width: 57mm;
+          height: 30mm;
+          padding: 2mm 3mm;
+          box-sizing: border-box;
+          overflow: hidden;
+          page-break-after: always;
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+        }
+        .header { display: flex; justify-content: space-between; font-weight: bold; font-size: 11px; border-bottom: 0.5px solid #000; padding-bottom: 1px; margin-bottom: 2px; }
+        .content { font-size: 10px; line-height: 1.2; flex-grow: 1; white-space: pre-wrap; }
+        .note { font-weight: bold; margin-top: 2px; }
+        .footer-price { font-size: 10px; font-weight: bold; text-align: right; border-top: 0.5px dashed #555; padding-top: 1px; }
+      </style>
+    </head>
+    <body>
+  `;
+
+  o.items.forEach((item, idx) => {
+    let formattedNote = '';
+    if (item.note) {
+      formattedNote = '❌ ' + item.note.replace(/\n/g, '\n❌ ');
+    }
+
+    htmlContent += `
+      <div class="sticker-page">
+        <div class="header">
+          <span>👤 ${o.customerName}</span>
+          <span>ชิ้นที่ ${idx + 1}/${o.items.length}</span>
+        </div>
+        <div class="content">
+          <div><strong>${item.summaryName}</strong></div>
+          ${formattedNote ? `<div class="note">${formattedNote}</div>` : ''}
+        </div>
+        <div class="footer-price">
+          ราคาชิ้นนี้: ${item.price} บาท
+        </div>
+      </div>
+    `;
+  });
+
+  htmlContent += `
+      <script>
+        setTimeout(() => { window.print(); window.close(); }, 400);
+      <\/script>
+    </body>
+    </html>
+  `;
+
+  w.document.write(htmlContent);
+  w.document.close();
+}
+
+initCart();
+</script>
+</body>
+</html>
